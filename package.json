@@ -7,14 +7,14 @@
     "node": ">=6"
   },
   "scripts": {
-    "precommit": "lint-staged"
+    "precommit": "lint-staged",
     "test": "for i in `find | grep -v .c9 | grep _test.js`; do node $i; done"
   },
   "lint-staged": {
     "*.js": [
       "prettier --write",
       "git add"
-    ]    
+    ]
   },
   "repository": {
     "type": "git",
@@ -33,6 +33,8 @@
   "homepage": "https://github.com/mvhenten/kabinet#readme",
   "devDependencies": {
     "faker": "^3.0.1",
+    "husky": "^0.13.3",
+    "lint-staged": "^3.4.0",
     "lodash": "^4.6.1",
     "react": "^0.14.7",
     "sinon": "^1.17.3",
