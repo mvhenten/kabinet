@@ -3,10 +3,13 @@
 const State = new WeakMap();
 
 const clone = (value) => {
+    // no need to clone null, undefined, 0, false or ""
+    if (!value) return value;
+
     if (Array.isArray(value))
         return value.map(clone);
 
-    if (typeof value == "object" && value != null)
+    if (typeof value == "object")
         return Object.keys(value).reduce((o, key) => {
             return Object.assign(o, {
                 [key]: clone(value[key])
@@ -53,6 +56,8 @@ const proto = {
         
         if (arguments.length == 2)
             newState = {[name]: value};
+        else
+            newState = name;
         
         for (let key in newState) {
             if (!(key in state.storeProps))
@@ -69,13 +74,15 @@ module.exports.create = function create(name = "StoreName", storeProps = {}) {
     check('first argument "name"', String, name);
     check('second argument "storeProps"', Object, storeProps);
 
-    const ctor = function() {
+    const ctor = function(defaults) {
         State.set(this, {
             name: name,
             state: {},
             observers: new Map(),
             storeProps: storeProps
         });
+        
+        if (defaults) this.setState(defaults);
     };
 
     ctor.prototype = Object.create(proto);

@@ -12,11 +12,11 @@ class Keeper {
         });
     }
 
-    getStore(Store) {
+    getStore(Store, defaults) {
         let state = State.get(this);
 
         if (!state.stores.has(Store.name)) {
-            let store = new Store();
+            let store = new Store(defaults);
 
             if (state.storage) {
                 store.setState(state.storage[Store.name]);
