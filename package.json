@@ -3,6 +3,9 @@
   "version": "0.2.0",
   "description": "Observable key-value stores",
   "main": "index.js",
+  "engines": {
+    "node": ">=6"
+  },
   "scripts": {
     "test": "for i in `find | grep -v .c9 | grep _test.js`; do node $i; done"
   },
