@@ -7,7 +7,14 @@
     "node": ">=6"
   },
   "scripts": {
+    "precommit": "lint-staged"
     "test": "for i in `find | grep -v .c9 | grep _test.js`; do node $i; done"
+  },
+  "lint-staged": {
+    "*.js": [
+      "prettier --write",
+      "git add"
+    ]    
   },
   "repository": {
     "type": "git",
