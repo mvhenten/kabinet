@@ -2,7 +2,7 @@
   "name": "kabinet",
   "version": "1.0.0",
   "description": "Observable key-value stores",
-  "main": "index.js",
+  "main": "dist/index.js",
   "engines": {
     "node": ">=6"
   },
