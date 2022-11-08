@@ -1,20 +1,20 @@
 {
   "name": "kabinet",
-  "version": "0.3.0",
+  "version": "1.0.0",
   "description": "Observable key-value stores",
-  "main": "index.js",
+  "main": "dist/index.js",
   "engines": {
     "node": ">=6"
   },
   "scripts": {
-    "precommit": "lint-staged",
-    "test": "for i in `find | grep -v .c9 | grep _test.js`; do node $i; done"
-  },
-  "lint-staged": {
-    "*.js": [
-      "prettier --write",
-      "git add"
-    ]
+    "clean": "rm -rf dist/bundle.js node_modules",
+    "fix": "prettier -w src/",
+    "test": "npm run test:prettier && npm run test:eslint && npm run test:unit",
+    "test:eslint": "eslint src",
+    "test:unit": "ava src/",
+    "test:prettier": "prettier -c src/",
+    "compile": "tsc",
+    "prepublishOnly": "npm run compile"
   },
   "repository": {
     "type": "git",
@@ -31,13 +31,50 @@
     "url": "https://github.com/mvhenten/kabinet/issues"
   },
   "homepage": "https://github.com/mvhenten/kabinet#readme",
+  "ava": {
+    "extensions": [
+      "ts"
+    ],
+    "require": [
+      "ts-node/register"
+    ]
+  },
+  "prettier": {
+    "trailingComma": "es5",
+    "tabWidth": 4,
+    "singleQuote": false
+  },
+  "eslintConfig": {
+    "env": {
+      "browser": true,
+      "es2021": true,
+      "node": true
+    },
+    "extends": [
+      "eslint:recommended",
+      "plugin:@typescript-eslint/recommended"
+    ],
+    "overrides": [],
+    "parser": "@typescript-eslint/parser",
+    "parserOptions": {
+      "ecmaVersion": "latest",
+      "sourceType": "module"
+    },
+    "plugins": [
+      "@typescript-eslint"
+    ],
+    "rules": {}
+  },
   "devDependencies": {
-    "faker": "^3.0.1",
-    "husky": "^0.13.3",
-    "lint-staged": "^3.4.0",
-    "lodash": "^4.6.1",
-    "react": "^0.14.7",
-    "sinon": "^1.17.3",
-    "tape": "^4.4.0"
+    "@typescript-eslint/eslint-plugin": "^5.42.1",
+    "@typescript-eslint/parser": "^5.42.1",
+    "ava": "^5.0.1",
+    "eslint": "^8.27.0",
+    "ts-node": "^10.9.1",
+    "ts-sinon": "^2.0.2",
+    "typescript": "^4.8.4"
+  },
+  "dependencies": {
+    "prettier": "^2.7.1"
   }
 }
