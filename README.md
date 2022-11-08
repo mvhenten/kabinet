@@ -1,81 +1,117 @@
 # kabinet
 Observable key-value stores for flux apps
 
+From version 1.x the API is strictly typescript and ES6. 
+
 # Installation
 
-`npm install kabinet`
+`npm install kabinet --save-dev`
 
 ## Usage
 
-This simple example creates a store and attaches an observer
+This simple example creates a store that can be observed for changes.
+Note how all state is strictly typed all the way.
 
-```javascript
+```typescript
+import Store from "kabinet";
 
-const Store = require("kabinet/store");
+export type TodoData = Map<string, boolean>;
 
-let TodoStore = Store.create("TodoStore", {
-   todos: Array 
-});
+export interface TodoState {
+    todos: TodoData;
+}
 
-let store = new TodoStore();
+export class TodoStore extends Store<TodoState> {
+    static initialTodo = new Map<string, boolean>();
 
-store.observe((state) => {
-    console.log(state); // { todos: ["pick up laundry"] }
-})
+    constructor() {
+        super({
+            todos: TodoStore.initialTodo,
+        });
+    }
 
-store.setState("todos", [{title: "pick up laundry"}]);
+    markTodoDone(key: string): void {
+        this.setTodo(key, true);
+    }
 
+    addTodo(key: string): void {
+        this.setTodo(key, false);
+    }
+
+    private setTodo(key: string, value: boolean): void {
+        const { todos } = this.getState();
+        todos.set(key, value);
+        this.setState({ todos });
+    }
+}
+
+export const todoStore = new TodoStore();
 ```
 
-## Advanced usage
 
-To implement the flux pattern, one will need to keep a reference to stores and
-attach observers during comonent lifecycle.
+## Sample Todo App
 
-(following is pseudo code, see [tests](./store_test.js) for more examples)
+The following trivial todo app shows how our observer pattern integrates seamlessly with React hooks.
+Kabinet can serve as a bridge to components outside of react, as you can have as many observers as needed.
+
 
 ```javascript
 
-let React = require("react");
-let Store = require("kabinet/store");
-let Keeper = require("kabinet/keeper");
+import React, { useState, useEffect, FormEvent } from 'react';
+import { TodoData, todoStore } from "./Todo";
 
-/* /lib/store-keeper.js */
-let storeKeeper = new Keeper();
+function Todo() {
+    const [todo, setTodo] = useState("test");
 
-module.exports = storeKeeper;
-
-/* /lib/store/todo */
-module.exports = Store.create("TodoList", {
-    todos: Array
-});
-
-/* inside your component, require storeKeeper and store */
-
-class TodoList extends React.component {
-    constructor(props) {
-        super(props);
-        this.state = {};
+    const addTodo = (evt: FormEvent) => {
+        todoStore.addTodo(todo);
+        setTodo("");
     }
-    
-    componentDidMount() {
-        storeKeeper.getStore(TodoList).observe(this.setState.bind(this));
-    }
-    
-    componentWillUnmount() {
-        storeKeeper.getStore(TodoList).stopObserving(this.setState);
-    }
-    
-    render() {
-        if (!this.state.todos)
-            return <div>No todo items yet</div>;
-        
-        return {this.state.todos.map(todo) (
-            <TodoItem key={todo.id} todo={todo} />
-        )};
-    }
-};
 
+    const onChange = (evt: React.ChangeEvent<HTMLInputElement>) => {
+        const target = evt.target as HTMLInputElement;
+        setTodo(target.value);
+    }
+
+    return (
+        <div>
+            <input name="new" value={todo} onChange={onChange} type="text" />
+            <button onClick={addTodo}>Add todo</button>
+        </div>
+    );
+}
+
+const TodoList = (props: { todos: TodoData }) => {
+    const todos = Array.from(props.todos.entries());
+
+    const onChange = (evt: React.ChangeEvent<HTMLInputElement>) => {
+        todoStore.markTodoDone(evt.target.name);
+    }
+
+    return (
+        <ul>{todos.map(([key, checked]) => (
+            <li key={key}>
+                <label>
+                    <input type="checkbox" name={key} onChange={onChange} checked={checked} />{key}
+                </label>
+            </li>))}
+        </ul>);
+}
+
+function App() {
+    const [todoData, setTodoData] = useState({ todos: new Map<string, boolean>() });
+
+    useEffect(() => todoStore.observe(setTodoData));
+
+    return (
+        <div className="App">
+            <Todo />
+            <TodoList todos={todoStore.getState().todos} />
+        </div>
+    );
+}
+
+export default App;
 ```
 
 ## background
@@ -90,7 +126,7 @@ concepts from the [object.observe shim](https://github.com/KapIT/observe-shim).
 This implementation has the following advantages:
 
 - Stores can be used server-side without side-effects
-- Easy to reason about stores, as they are just a `require` away
+- Easy to reason about stores, as they are just an `import` away
 - Simple unit tests can be used to test behaviour of methods
-- React compatible input validation
+- Stores are typed, and can be initialised with data.
 
