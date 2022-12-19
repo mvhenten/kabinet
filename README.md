@@ -1,7 +1,8 @@
 # kabinet
-Observable key-value stores for flux apps
-
+Observable, _external_ key-value stores for flux apps. 
 From version 1.x the API is strictly typescript and ES6. 
+
+Kabinet works has an API that intergrates _external_ state with React's _useEffect_ and _useState_ [hooks](https://beta.reactjs.org/apis/react/useEffect#connecting-to-an-external-system).
 
 # Installation
 
@@ -15,14 +16,17 @@ Note how all state is strictly typed all the way.
 ```typescript
 import Store from "kabinet";
 
-export type TodoData = Map<string, boolean>;
+export type TodoDate = Map<string, boolean>;
 
 export interface TodoState {
-    todos: TodoData;
+  todos: TodoDate;
 }
 
 export class TodoStore extends Store<TodoState> {
-    static initialTodo = new Map<string, boolean>();
+    static initialTodo = new Map<string, boolean>([
+        ["Create TODO demo", true],
+        ["Add more TODO's", true]
+    ]);
 
     constructor() {
         super({
@@ -30,15 +34,7 @@ export class TodoStore extends Store<TodoState> {
         });
     }
 
-    markTodoDone(key: string): void {
-        this.setTodo(key, true);
-    }
-
-    addTodo(key: string): void {
-        this.setTodo(key, false);
-    }
-
-    private setTodo(key: string, value: boolean): void {
+    setTodo(key: string, value: boolean): void {
         const { todos } = this.getState();
         todos.set(key, value);
         this.setState({ todos });
@@ -56,58 +52,47 @@ Kabinet can serve as a bridge to components outside of react, as you can have as
 
 
 ```javascript
-
-import React, { useState, useEffect, FormEvent } from 'react';
-import { TodoData, todoStore } from "./Todo";
-
-function Todo() {
-    const [todo, setTodo] = useState("test");
-
-    const addTodo = (evt: FormEvent) => {
-        todoStore.addTodo(todo);
-        setTodo("");
-    }
-
-    const onChange = (evt: React.ChangeEvent<HTMLInputElement>) => {
-        const target = evt.target as HTMLInputElement;
-        setTodo(target.value);
-    }
-
-    return (
-        <div>
-            <input name="new" value={todo} onChange={onChange} type="text" />
-            <button onClick={addTodo}>Add todo</button>
-        </div>
-    );
-}
-
-const TodoList = (props: { todos: TodoData }) => {
-    const todos = Array.from(props.todos.entries());
-
-    const onChange = (evt: React.ChangeEvent<HTMLInputElement>) => {
-        todoStore.markTodoDone(evt.target.name);
-    }
-
-    return (
-        <ul>{todos.map(([key, checked]) => (
-            <li key={key}>
-                <label>
-                    <input type="checkbox" name={key} onChange={onChange} checked={checked} />{key}
-                </label>
-            </li>))}
-        </ul>);
-}
+import React, { useState, useEffect, ChangeEvent } from 'react'
+import { todoStore, TodoState } from "./todo-store";
 
 function App() {
-    const [todoData, setTodoData] = useState({ todos: new Map<string, boolean>() });
+    const [todoState, setTodoState] = useState(todoStore.getState());
+    const [todo, updateTodo] = useState("");
 
-    useEffect(() => todoStore.observe(setTodoData));
+    const onCheck = (evt:ChangeEvent<HTMLInputElement>) => {
+      todoStore.setTodo(evt.target.name, evt.target.checked);
+    }
+
+    const onChange = (evt:ChangeEvent<HTMLInputElement>) => {
+      updateTodo(evt.target.value);
+    }
+
+    const addTodo = () => {
+      if (todo !== "") {
+        todoStore.setTodo(todo, false); 
+        updateTodo("");
+      }
+    }
+
+    // The observe method returns cleanup code, and removes the binding.
+    useEffect(() => todoStore.observe(setTodoState));
+
+    const todos = Array.from(todoState.todos.entries());
 
     return (
-        <div className="App">
-            <Todo />
-            <TodoList todos={todoStore.getState().todos} />
-        </div>
+      <div>
+        <ul>
+          {todos.map(([key, value], idx) => (
+            <li key={idx}>
+              <label>
+                <input onChange={onCheck} name={key} type="checkbox" checked={value} />{key}
+              </label>
+              </li>
+            ))}
+        </ul>
+        <input type="text" value={todo} onChange={onChange} />
+        <button onClick={addTodo}>add</button>
+      </div>
     );
 }
 

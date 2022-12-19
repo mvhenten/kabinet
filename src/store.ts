@@ -19,6 +19,8 @@ export default abstract class Store<StateType> {
 
     setState(newState: Partial<StateType>): void {
         for (const key in newState) {
+            // Partial<StateType> already protects state[key] type
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
             this.state[key] = newState[key]!;
         }
 

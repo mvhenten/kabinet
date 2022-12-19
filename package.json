@@ -2,7 +2,10 @@
   "name": "kabinet",
   "version": "1.0.0",
   "description": "Observable key-value stores",
-  "main": "dist/index.js",
+  "main": "dist/store.js",
+  "files": [
+    "dist"
+  ],
   "engines": {
     "node": ">=6"
   },
@@ -13,6 +16,8 @@
     "test:eslint": "eslint src",
     "test:unit": "ava src/",
     "test:prettier": "prettier -c src/",
+    "prepare:demo": "npm pack && cd kabinet-demo && npm install && cd ..",
+    "run:demo": "cd kabinet-demo && npm run dev",
     "compile": "tsc",
     "prepublishOnly": "npm run compile"
   },
