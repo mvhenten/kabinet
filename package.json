@@ -1,6 +1,6 @@
 {
   "name": "kabinet",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Observable key-value stores",
   "main": "dist/store.js",
   "files": [
