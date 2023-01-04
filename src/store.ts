@@ -14,7 +14,7 @@ export default abstract class Store<StateType> {
     }
 
     getState(): StateType {
-        return Object.assign({}, this.state);
+        return Object.freeze(this.state);
     }
 
     setState(newState: Partial<StateType>): void {
