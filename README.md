@@ -1,8 +1,10 @@
-# kabinet
-Observable, _external_ key-value stores for flux apps. 
-From version 1.x the API is strictly typescript and ES6. 
+# 🗄️ kabinet
+Kabinet is a minimal framework for (p)react based webapps that provides an _external_ state designed to be used together with with React's _useEffect_ and _useSyncExternalStore_.
 
-Kabinet works has an API that intergrates _external_ state with React's _useEffect_ and _useState_ [hooks](https://beta.reactjs.org/apis/react/useEffect#connecting-to-an-external-system).
+See [Subscribing to an external store](https://beta.reactjs.org/reference/react/useSyncExternalStore#subscribing-to-an-external-store) in the React manual for a better explanation why this is useful.
+
+## Changes since 1.x
+From version 1.x the API is strictly typescript and compiled to ES6. 
 
 # Installation
 
