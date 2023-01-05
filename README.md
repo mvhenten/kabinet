@@ -10,94 +10,33 @@ Kabinet works has an API that intergrates _external_ state with React's _useEffe
 
 ## Usage
 
-This simple example creates a store that can be observed for changes.
-Note how all state is strictly typed all the way.
+Create a subclass of cabinet to store your data:
 
-```typescript
+```
 import Store from "kabinet";
 
-export type TodoDate = Map<string, boolean>;
-
-export interface TodoState {
-  todos: TodoDate;
-}
-
-export class TodoStore extends Store<TodoState> {
-    static initialTodo = new Map<string, boolean>([
-        ["Create TODO demo", true],
-        ["Add more TODO's", true]
-    ]);
-
-    constructor() {
-        super({
-            todos: TodoStore.initialTodo,
-        });
-    }
-
-    setTodo(key: string, value: boolean): void {
-        const { todos } = this.getState();
-        todos.set(key, value);
-        this.setState({ todos });
-    }
-}
+class TodoStore extends Store<{todos:Record<string, boolean>}>;
 
 export const todoStore = new TodoStore();
+
 ```
 
+Inside a component, use effects ("hooks") to subscribe to state:
 
-## Sample Todo App
+```
+const RenderTodos = () => {
+  const { todoState, setTodoState } = useState(todoStore.getState());
 
-The following trivial todo app shows how our observer pattern integrates seamlessly with React hooks.
-Kabinet can serve as a bridge to components outside of react, as you can have as many observers as needed.
+  useEffect(() => {
+    const unsubscribe = todoStore.observe(setTodoState);
+    return unsubscribe;
+  }, []);
 
-
-```javascript
-import React, { useState, useEffect, ChangeEvent } from 'react'
-import { todoStore, TodoState } from "./todo-store";
-
-function App() {
-    const [todoState, setTodoState] = useState(todoStore.getState());
-    const [todo, updateTodo] = useState("");
-
-    const onCheck = (evt:ChangeEvent<HTMLInputElement>) => {
-      todoStore.setTodo(evt.target.name, evt.target.checked);
-    }
-
-    const onChange = (evt:ChangeEvent<HTMLInputElement>) => {
-      updateTodo(evt.target.value);
-    }
-
-    const addTodo = () => {
-      if (todo !== "") {
-        todoStore.setTodo(todo, false); 
-        updateTodo("");
-      }
-    }
-
-    // The observe method returns cleanup code, and removes the binding.
-    useEffect(() => todoStore.observe(setTodoState));
-
-    const todos = Array.from(todoState.todos.entries());
-
-    return (
-      <div>
-        <ul>
-          {todos.map(([key, value], idx) => (
-            <li key={idx}>
-              <label>
-                <input onChange={onCheck} name={key} type="checkbox" checked={value} />{key}
-              </label>
-              </li>
-            ))}
-        </ul>
-        <input type="text" value={todo} onChange={onChange} />
-        <button onClick={addTodo}>add</button>
-      </div>
-    );
+  // render todos
+  return ...;
 }
 
-export default App;
-```
+
 
 ## background
 

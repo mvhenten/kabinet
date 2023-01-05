@@ -10,16 +10,16 @@
     "node": ">=6"
   },
   "scripts": {
-    "clean": "rm -rf dist/bundle.js node_modules",
+    "clean": "rm -rf dist *.tgz",
     "fix": "prettier -w src/",
     "test": "npm run test:prettier && npm run test:eslint && npm run test:unit",
     "test:eslint": "eslint src",
     "test:unit": "ava src/",
     "test:prettier": "prettier -c src/",
-    "prepare:demo": "npm pack && cd kabinet-demo && npm install && cd ..",
+    "prepare:demo": "rm -rf kabinet-demo/node_modules/ && npm run prepublishOnly && npm pack && cd kabinet-demo && npm install && cd ..",
     "run:demo": "cd kabinet-demo && npm run dev",
     "compile": "tsc",
-    "prepublishOnly": "npm run compile"
+    "prepublishOnly": "npm run clean && npm run compile"
   },
   "repository": {
     "type": "git",
