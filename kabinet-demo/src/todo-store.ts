@@ -1,9 +1,11 @@
 import Store from "kabinet";
+import { useSyncExternalStore } from "react";
 
 export type TodoDate = Map<string, boolean>;
 
 export interface TodoState {
   todos: TodoDate;
+  status: "ready" | "saving";
 }
 
 export class TodoStore extends Store<TodoState> {
@@ -14,15 +16,12 @@ export class TodoStore extends Store<TodoState> {
 
     constructor() {
         super({
+            status: "ready",
             todos: TodoStore.initialTodo,
         });
-    }
-
-    setTodo(key: string, value: boolean): void {
-        const { todos } = this.getState();
-        todos.set(key, value);
-        this.setState({ todos });
     }
 }
 
 export const todoStore = new TodoStore();
+
+export const useTodoStore = () => useSyncExternalStore((subscribe) => todoStore.observe(subscribe), () => todoStore.getState());

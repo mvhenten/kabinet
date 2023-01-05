@@ -1,12 +1,14 @@
 import React, { useState, useEffect, ChangeEvent } from 'react'
-import { todoStore, TodoState } from "./todo-store";
+import { todoStore, TodoState, useTodoStore } from "./todo-store";
+import { setTodo } from './todo-action';
 
 function App() {
-    const [todoState, setTodoState] = useState(todoStore.getState());
+    const { todos } = useTodoStore();
+    // const [todoState, setTodoState] = useState(todoStore.getState());
     const [todo, updateTodo] = useState("");
 
     const onCheck = (evt:ChangeEvent<HTMLInputElement>) => {
-      todoStore.setTodo(evt.target.name, evt.target.checked);
+      setTodo(evt.target.name, evt.target.checked);
     }
 
     const onChange = (evt:ChangeEvent<HTMLInputElement>) => {
@@ -15,20 +17,20 @@ function App() {
 
     const addTodo = () => {
       if (todo !== "") {
-        todoStore.setTodo(todo, false); 
+        setTodo(todo, false); 
         updateTodo("");
       }
     }
 
     // The observe method returns cleanup code, and removes the binding.
-    useEffect(() => todoStore.observe(setTodoState));
+    // useEffect(() => todoStore.observe(setTodoState));
 
-    const todos = Array.from(todoState.todos.entries());
+    const todoValues = Array.from(todos.entries());
 
     return (
       <div>
         <ul>
-          {todos.map(([key, value], idx) => (
+          {todoValues.map(([key, value], idx) => (
             <li key={idx}>
               <label>
                 <input onChange={onCheck} name={key} type="checkbox" checked={value} />{key}
