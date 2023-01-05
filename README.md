@@ -12,47 +12,132 @@ From version 1.x the API is strictly typescript and compiled to ES6.
 
 ## Usage
 
-Create a subclass of cabinet to store your data:
+### Example using useSyncExternalStore
 
-```
+This example draws from the [useSyncExternalStore](https://beta.reactjs.org/reference/react/useSyncExternalStore) example.
+
+*TodoStore.ts*
+
+```typescript
 import Store from "kabinet";
 
-class TodoStore extends Store<{todos:Record<string, boolean>}>;
-
-export const todoStore = new TodoStore();
-
-```
-
-Inside a component, use effects ("hooks") to subscribe to state:
-
-```
-const RenderTodos = () => {
-  const { todoState, setTodoState } = useState(todoStore.getState());
-
-  useEffect(() => {
-    const unsubscribe = todoStore.observe(setTodoState);
-    return unsubscribe;
-  }, []);
-
-  // render todos
-  return ...;
+interface Todo {
+  id: number;
+  done: boolean;
+  text: string;
 }
 
+class TodoStore extends Store<{todos:Map<number,Todo[]>}> {
+  private lastId = 0;
+
+  addTodo() {
+    const id = this.lastId++;
+    const text = `Todo #${id}`;
+
+    this.getState().todos.add(id, { id, done:false, text});
+  }
+};
+export const todoStore = new TodoStore();
+
+export const subscribe = (done) => todoStore.observe(done);
+
+export const getState = () => todoStore.getState();
+```
+
+*App.js*
+
+```typescript
+import { useSyncExternalStore } from 'react';
+import { todoStore, subscribe, getState } from './todoStore';
+
+export default function TodosApp() {
+  const {todos} = useSyncExternalStore(subscribe, getState);
+
+  return (
+    <>
+      <button onClick={() => todosStore.addTodo()}>Add todo</button>
+      <hr />
+      <ul>
+        {todos.map(todo => (
+          <li key={todo.id}>{todo.text}</li>
+        ))}
+      </ul>
+    </>
+  );
+```
+
+### Using useEffect
+
+See [useEffect](https://beta.reactjs.org/reference/react/useEffect)
+
+*App.js*
+
+```typescript
+import { useState, useEffect  } from 'react';
+import { todoStore } from './todoStore';
+
+export default function TodosApp() {
+  const [todoState, setTodoState] = useState(todoStore.getState());
+  
+  // only connect when mounting the component
+  useEffect(() => todoState.observe(setTodoState),  []);
+
+  return (
+    <>
+      <button onClick={() => todosStore.addTodo()}>Add todo</button>
+      <hr />
+      <ul>
+        {todoState.todos.map(todo => (
+          <li key={todo.id}>{todo.text}</li>
+        ))}
+      </ul>
+    </>
+  );
+```
+
+### Creating a custom hook
+
+See [Extracting the logic to a custom Hook](https://beta.reactjs.org/reference/react/useSyncExternalStore#extracting-the-logic-to-a-custom-hook) from react's manual:
+
+Adding the following custom hook to the todoStore above:
+
+*TodoStore.ts*
+
+```typescript
+export const useTodoStore = () => (
+  useSyncExternalStore(
+    (done) => todoStore.observe(done)), 
+    todoStore.getState()
+  )
+);
+```
+
+Now different components can call `useTodoStore`` without repeating the underlying implementation:
+
+```typescript
+import { useTodoStore, todosStore } from './todoStore';
+
+export default function TodosApp() {
+  const {todos} = useTodoStore();
+
+  return (
+    <>
+      <button onClick={() => todosStore.addTodo()}>Add todo</button>
+      <hr />
+      <ul>
+        {todos.map(todo => (
+          <li key={todo.id}>{todo.text}</li>
+        ))}
+      </ul>
+    </>
+  );
+  ```
 
 
 ## background
 
-Kabinet introduces a event-less observable store implementation for flux apps,
-introducing flux-stores *without* the use of EventEmitter, based on the 
-[Observer pattern](https://en.wikipedia.org/wiki/Observer_pattern) instead.
+Since reading about the [flux architecture pattern](https://reactjs.org/blog/2014/05/06/flux.html) I've had copies of something like _store.js_ around in my projects. Kabinet is where I publish my latest copy. Since my teams have moved to typescript, I dropped runtime type systems and have simplified this library significantly.
 
-Stores work as a proxy object between internal state and the outside world, borrowing
-concepts from the [object.observe shim](https://github.com/KapIT/observe-shim).
+Still, I believe it's useful to separate the core logic of calling subscribers from my apps and keep it around in this separate package. 
 
-This implementation has the following advantages:
-
-- Stores can be used server-side without side-effects
-- Easy to reason about stores, as they are just an `import` away
-- Simple unit tests can be used to test behaviour of methods
-- Stores are typed, and can be initialised with data.
-
+kabinet is simple, uses no globals, and works well with server-side rendering.
