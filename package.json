@@ -16,10 +16,10 @@
     "test:eslint": "eslint src",
     "test:unit": "ava src/",
     "test:prettier": "prettier -c src/",
-    "prepare:demo": "rm -rf kabinet-demo/node_modules/ && npm run prepublishOnly && npm pack && cd kabinet-demo && npm install && cd ..",
-    "run:demo": "cd kabinet-demo && npm run dev",
+    "prepare:demo": "rm -rf demo/node_modules/ && npm pack && cd demo && npm install && cd ..",
+    "demo": "npm run prepare:demo && cd demo && npm run dev",
     "compile": "tsc",
-    "prepublishOnly": "npm run clean && npm run compile"
+    "prepare": "npm run compile"
   },
   "repository": {
     "type": "git",
@@ -28,7 +28,12 @@
   "keywords": [
     "flux",
     "store",
-    "observable"
+    "observable",
+    "state",
+    "exernal state",
+    "custom hook",
+    "react",
+    "useSyncExternalStore"
   ],
   "author": "Matthijs van Henten <matthijs@c9.io>",
   "license": "MIT",
