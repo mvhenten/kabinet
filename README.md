@@ -1,4 +1,4 @@
-# 🗄️ kabinet
+# 🗄️ kabinet ![Build Status](https://github.com/mvhenten/kabinet/actions/workflows/node.js.yml/badge.svg)
 Kabinet is a minimal framework for (p)react based webapps that provides an _external_ state designed to be used together with with React's _useEffect_ and _useSyncExternalStore_.
 
 See [Subscribing to an external store](https://beta.reactjs.org/reference/react/useSyncExternalStore#subscribing-to-an-external-store) in the React manual for a better explanation why this is useful.
