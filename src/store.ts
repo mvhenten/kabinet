@@ -17,12 +17,16 @@ export default abstract class Store<StateType> {
         return Object.seal(this.state);
     }
 
-    setState(newState: Partial<StateType>): void {
-        for (const key in newState) {
+    setState(updates: Partial<StateType>): void {
+        const newState = { ...this.state };
+
+        for (const key in updates) {
             // Partial<StateType> already protects state[key] type
             // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-            this.state[key] = newState[key]!;
+            newState[key] = updates[key]!;
         }
+
+        this.state = newState;
 
         for (const fn of this.observers) {
             fn(this.getState());
