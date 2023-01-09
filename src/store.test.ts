@@ -1,6 +1,7 @@
 import test from "ava";
 import Store from "./store";
 import sinon from "ts-sinon";
+import keeper from "./keeper";
 
 interface FakeState {
     status: string;
@@ -39,4 +40,42 @@ test("observe", (t) => {
     fakeStore.setState({ status: "fake status" });
 
     t.assert(observer.calledOnce);
+});
+
+test("getState is immutable", (t) => {
+    const store = new FakeStore();
+
+    store.setState({ status: "new status" });
+
+    t.is(store.getState(), store.getState(), "Store passes Object.is");
+
+    const oldState = store.getState();
+
+    store.setState({ status: "new status" });
+
+    t.not(store.getState(), oldState, "State has changes after update");
+});
+
+test("keeper", (t) => {
+    const store = new FakeStore();
+
+    keeper.setStore(FakeStore, store);
+
+    t.is(store, keeper.getStore(FakeStore));
+});
+
+test("keeper clears", (t) => {
+    const store = new FakeStore();
+    keeper.setStore(FakeStore, store);
+
+    t.is(store, keeper.getStore(FakeStore));
+
+    keeper.clearStores();
+
+    const error = t.throws(() => {
+        keeper.getStore(FakeStore);
+    });
+
+    t.assert(error);
+    t.is(error?.message, "Store FakeStore has not been initialized");
 });
