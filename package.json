@@ -19,7 +19,8 @@
     "prepare:demo": "rm -rf demo/node_modules/ && npm pack && cd demo && npm install && cd ..",
     "demo": "npm run prepare:demo && cd demo && npm run dev",
     "compile": "tsc",
-    "prepare": "npm run compile"
+    "prepare": "npm run compile",
+    "prepublishOnly": "npm run test"
   },
   "repository": {
     "type": "git",
